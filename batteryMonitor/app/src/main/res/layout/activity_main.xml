@@ -36,4 +36,16 @@
             app:layout_constraintTop_toTopOf="parent" android:layout_marginStart="24dp"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginEnd="24dp"
             app:layout_constraintEnd_toStartOf="@+id/pclLogo" android:background="#80C2C2C2" android:textSize="17sp"/>
+    <TextView
+            android:text="Waiting 30 seconds for temperature to stablise. Please put device into Thermal chamber"
+            android:layout_width="329dp"
+            android:layout_height="431dp"
+            android:id="@+id/waitText"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="16dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp" android:textSize="24sp" android:textAlignment="center"
+            android:visibility="visible"
+            app:layout_constraintTop_toTopOf="@+id/displayContainer" android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="@+id/displayContainer" android:textStyle="bold"
+            android:textColor="#00FFFFFF" tools:visibility="visible"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

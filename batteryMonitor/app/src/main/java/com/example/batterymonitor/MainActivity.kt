@@ -18,11 +18,17 @@ import java.io.*
 import android.content.res.AssetManager
 import android.graphics.BitmapFactory
 import android.widget.Button
+import android.widget.ProgressBar
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.opencsv.CSVWriter
 import com.opencsv.bean.ColumnPositionMappingStrategy
 import com.opencsv.bean.StatefulBeanToCsv
 import com.opencsv.bean.StatefulBeanToCsvBuilder
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -73,6 +79,27 @@ class powerMeasurement {
     }
 }
 
+
+class experimentConfig {
+    var startTime_timestamp:Long = 0
+    var endTime_timestamp:Long = 0
+
+    var startTime_time:String? = null
+    var endTime_time:String? = null
+
+    var startDate:String? = null
+    var endDate:String? = null
+
+    var deviceName:String? = null
+
+    var log_rate:Int = 0
+    var experiemnt_rate:Int = 0
+    var experiemnt_log:String? = null
+    var experiemnt_list:String? = null
+    var experiemnt_name:String? = null
+
+}
+
 val nullMeasurement = powerMeasurement(
                                     battery_status=0,
                                     battery_charging=0,
@@ -87,21 +114,34 @@ val nullMeasurement = powerMeasurement(
                                     battery_health=0,
                                     displayState=null)
 
+//
+//fun loadConfigFile(path: Path): experimentConfig {
+//    val mapper = ObjectMapper(YAMLFactory()) // Enable YAML parsing
+//    mapper.registerModule(KotlinModule()) // Enable Kotlin support
+////    fileReader = BufferedReader(testConfigReader)
+//
+//    return Files.newBufferedReader(path).use {
+//        mapper.readValue(it, experimentConfig::class.java)
+//    }
+//}
+
 class MainActivity : AppCompatActivity() {
     private var expListText:String = ""
-
     private val CSV_HEADER = arrayOf<String>("timestamp","status","charging","capacity","cc","currentAvg","currentNow",
                                         "energyCount","technology","temp","voltage","health","displayState")
 
     var measurementList = mutableListOf(nullMeasurement)
     var experimentID = 0
     var experimentStartTime: Long = 0
-//    var experimentsToRun : MutableList<Array<String>>? = null
+    //    var experimentsToRun : MutableList<Array<String>>? = null
     var experimentsToRun = listOf(arrayOf("sp","-"))
+//    var configData = loadConfigFile(getExternalFilesDir("measurementLogs") + "config")
+    val tempStabiliseTime:Long = 3_000
 
     val logCounter = Thread{
+        Thread.sleep(tempStabiliseTime) //wait for 30 seconds for temperature to stablise
         val batchSize = 10
-        val counterPeriod_ms:Long = 1_000
+        val counterPeriod_ms:Long = 200
         var measurementCount = 0
         var totalBatches = 0
         while (true) {
@@ -134,11 +174,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     val experimentCounter = Thread{
-        val counterPeriod_ms:Long = 5_000
+        Thread.sleep(tempStabiliseTime) //wait for 30 seconds for temperature to stablise
+        val counterPeriod_ms:Long = 30_000
+        val baseLinePeriod_ms:Long = 10_000
 //        val counterPeriod_ms:Long = 100
 
         var experimentCount = 0
-        var showTest = false
+        var showTest = true
         val display = findViewById<ImageView>(R.id.displayContainer)
         val expButton = findViewById<Button>(R.id.mainButton)
 //        var rgbValues = arrayListOf<Int>((0,0,0))
@@ -147,7 +189,6 @@ class MainActivity : AppCompatActivity() {
         // println(files[0])
 
         while (true) {
-            // println("experimentCounter hit!")
             //get experiment by ID and set display as required.
             println(experimentsToRun[experimentID][0].toString() + " | " + experimentsToRun[experimentID][1].toString())
             if (showTest) {
@@ -158,8 +199,9 @@ class MainActivity : AppCompatActivity() {
                         display.post{ display.setImageDrawable(null)}
                     }
                 } else if (experimentsToRun[experimentID][0] == "image"){
-                    display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
-                    display.post{ display.setImageResource(getResources().getIdentifier( experimentsToRun[experimentID][1], "drawable", getPackageName()))}
+//                    display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
+                     println("experimentCounter hit!")
+                    display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputConfig/" +experimentsToRun[experimentID][1] + ".png")))}
                 } else {
                     if (display.getDrawable() != null) {
                         display.post{ display.setImageDrawable(null)}
@@ -175,7 +217,12 @@ class MainActivity : AppCompatActivity() {
 
 
             try {
-                Thread.sleep(counterPeriod_ms)
+                if (showTest) {
+                    Thread.sleep(counterPeriod_ms)
+                } else {
+                    Thread.sleep(baseLinePeriod_ms)
+                }
+
                 showTest = !showTest
                 if (showTest){
                     experimentCount++
@@ -229,6 +276,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val expList = findViewById<TextView>(R.id.expList)
+//        println(configData)
 
         experimentsToRun = loadExperiments()
         for (experiment in experimentsToRun) {
@@ -289,11 +337,11 @@ class MainActivity : AppCompatActivity() {
 
     fun experimentRoot(view: View) {
         println("Button Pressed!")
+
         experimentStartTime = (System.currentTimeMillis()/1000).toLong()
 
         val expButton = findViewById<Button>(R.id.mainButton)
         val pclLogo = findViewById<ImageView>(R.id.pclLogo)
-
 
         expList.setVisibility(View.GONE)
         expButton.setVisibility(View.INVISIBLE)
