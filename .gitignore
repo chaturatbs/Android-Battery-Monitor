@@ -66,3 +66,7 @@ fastlane/readme.md
 
 
 *.vscode*
+logs
+batteryMonitor/app/src/main/assets/inputConfig/tests/
+.idea/
+.ipynb_checkpoints/

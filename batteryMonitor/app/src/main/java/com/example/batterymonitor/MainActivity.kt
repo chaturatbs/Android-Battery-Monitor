@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
     //    var experimentsToRun : MutableList<Array<String>>? = null
     var experimentsToRun = listOf(arrayOf("sp","-"))
 //    var configData = loadConfigFile(getExternalFilesDir("measurementLogs") + "config")
-    val tempStabiliseTime:Long = 3_000
+    val tempStabiliseTime:Long = 1_000
 
     val logCounter = Thread{
         Thread.sleep(tempStabiliseTime) //wait for 30 seconds for temperature to stablise
@@ -175,8 +175,8 @@ class MainActivity : AppCompatActivity() {
 
     val experimentCounter = Thread{
         Thread.sleep(tempStabiliseTime) //wait for 30 seconds for temperature to stablise
-        val counterPeriod_ms:Long = 30_000
-        val baseLinePeriod_ms:Long = 10_000
+        val counterPeriod_ms:Long = 60_000
+        val baseLinePeriod_ms:Long = 20_000
 //        val counterPeriod_ms:Long = 100
 
         var experimentCount = 0
@@ -201,7 +201,14 @@ class MainActivity : AppCompatActivity() {
                 } else if (experimentsToRun[experimentID][0] == "image"){
 //                    display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
                      println("experimentCounter hit!")
-                    display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputConfig/" +experimentsToRun[experimentID][1] + ".png")))}
+
+                    if (experimentsToRun[experimentID][1].contains("."))
+                    {
+                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputConfig/" +experimentsToRun[experimentID][1])))}
+                    }else {
+                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputConfig/" +experimentsToRun[experimentID][1] + ".png")))}
+                    }
+
                 } else {
                     if (display.getDrawable() != null) {
                         display.post{ display.setImageDrawable(null)}
