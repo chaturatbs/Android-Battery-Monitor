@@ -17,6 +17,7 @@ import com.opencsv.CSVReaderBuilder
 import java.io.*
 import android.content.res.AssetManager
 import android.graphics.BitmapFactory
+import android.os.Environment
 import android.widget.Button
 import android.widget.ProgressBar
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -31,6 +32,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.reflect.jvm.internal.impl.types.TypeCapabilities
 
 
 class powerMeasurement {
@@ -176,7 +178,7 @@ class MainActivity : AppCompatActivity() {
     val experimentCounter = Thread{
         Thread.sleep(tempStabiliseTime) //wait for 30 seconds for temperature to stablise
         val counterPeriod_ms:Long = 60_000
-        val baseLinePeriod_ms:Long = 20_000
+        val baseLinePeriod_ms:Long = 20_00
 //        val counterPeriod_ms:Long = 100
 
         var experimentCount = 0
@@ -201,13 +203,29 @@ class MainActivity : AppCompatActivity() {
                 } else if (experimentsToRun[experimentID][0] == "image"){
 //                    display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
                      println("experimentCounter hit!")
+//                    var imgPath = getExternalFilesDir("inputImages").toString()
+//                    var logFile:File = File(getExternalFilesDir("measurementLogs"),fileName)
+
+                    var imageFile:File
 
                     if (experimentsToRun[experimentID][1].contains("."))
                     {
-                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputConfig/" +experimentsToRun[experimentID][1])))}
+                        imageFile = File(getExternalFilesDir("inputImages"),experimentsToRun[experimentID][1])
+//                        imgPath += "/"+ experimentsToRun[experimentID][1];
+//                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputImages/" +experimentsToRun[experimentID][1])))}
                     }else {
-                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputConfig/" +experimentsToRun[experimentID][1] + ".png")))}
+                        imageFile = File(getExternalFilesDir("inputImages"),experimentsToRun[experimentID][1]+".png")
+//                        imgPath += "/"+ experimentsToRun[experimentID][1] + ".png";
+
+//                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputImages/" +experimentsToRun[experimentID][1] + ".png")))}
                     }
+
+                    print(imageFile.toString())
+                    display.post{ display.setImageBitmap(BitmapFactory.decodeStream(imageFile.inputStream()))}
+
+//                    File file = new File(path);
+//                    FileInputStream fileInputStream = new FileInputStream(file);
+
 
                 } else {
                     if (display.getDrawable() != null) {
@@ -299,7 +317,10 @@ class MainActivity : AppCompatActivity() {
         val records:List<Array<String>>
 
         try {
-            val testConfigReader = InputStreamReader(getAssets().open("inputConfig/testConfig.csv"), StandardCharsets.UTF_8)
+
+//            val testConfigReader = InputStreamReader(getAssets().open("inputConfig/testConfig.csv"), StandardCharsets.UTF_8)
+            val testConfigReader = InputStreamReader(File(getExternalFilesDir("inputConfig"),"testConfig.csv").inputStream(), StandardCharsets.UTF_8)
+
             fileReader = BufferedReader(testConfigReader)
 
             if (incremental) {
