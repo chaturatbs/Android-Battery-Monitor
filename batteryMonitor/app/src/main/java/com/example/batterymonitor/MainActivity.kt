@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity() {
     val experimentCounter = Thread{
         Thread.sleep(tempStabiliseTime) //wait for 30 seconds for temperature to stablise
         val counterPeriod_ms:Long = 60_000
-        val baseLinePeriod_ms:Long = 20_00
+        val baseLinePeriod_ms:Long = 60_000
 //        val counterPeriod_ms:Long = 100
 
         var experimentCount = 0
@@ -234,10 +234,49 @@ class MainActivity : AppCompatActivity() {
                     display.post{ display.setBackgroundColor(Color.rgb(255,255,255))}
                 }
             } else {
-                display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
-                if (display.getDrawable() != null) {
-                    display.post{ display.setImageDrawable(null)}
+                if (experimentsToRun[0][0] == "rgb") {
+                    var rgbValues = experimentsToRun[0][1].split("-")
+                    display.post{ display.setBackgroundColor(Color.rgb(rgbValues[0].toInt(), rgbValues[1].toInt(), rgbValues[2].toInt()))}
+                    if (display.getDrawable() != null) {
+                        display.post{ display.setImageDrawable(null)}
+                    }
+                } else if (experimentsToRun[0][0] == "image"){
+//                    display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
+                    println("experimentCounter hit!")
+//                    var imgPath = getExternalFilesDir("inputImages").toString()
+//                    var logFile:File = File(getExternalFilesDir("measurementLogs"),fileName)
+
+                    var imageFile:File
+
+                    if (experimentsToRun[0][1].contains("."))
+                    {
+                        imageFile = File(getExternalFilesDir("inputImages"),experimentsToRun[0][1])
+//                        imgPath += "/"+ experimentsToRun[0][1];
+//                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputImages/" +experimentsToRun[0][1])))}
+                    }else {
+                        imageFile = File(getExternalFilesDir("inputImages"),experimentsToRun[0][1]+".png")
+//                        imgPath += "/"+ experimentsToRun[0][1] + ".png";
+
+//                        display.post{ display.setImageBitmap(BitmapFactory.decodeStream(getAssets().open("inputImages/" +experimentsToRun[0][1] + ".png")))}
+                    }
+
+                    print(imageFile.toString())
+                    display.post{ display.setImageBitmap(BitmapFactory.decodeStream(imageFile.inputStream()))}
+
+//                    File file = new File(path);
+//                    FileInputStream fileInputStream = new FileInputStream(file);
+
+
+                } else {
+                    if (display.getDrawable() != null) {
+                        display.post{ display.setImageDrawable(null)}
+                    }
+                    display.post{ display.setBackgroundColor(Color.rgb(255,255,255))}
                 }
+//                display.post{ display.setBackgroundColor(Color.rgb(0,0,0))}
+//                if (display.getDrawable() != null) {
+//                    display.post{ display.setImageDrawable(null)}
+//                }
             }
 
 
